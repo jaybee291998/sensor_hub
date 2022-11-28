@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+{% block title %}
+	Login
+{% endblock %}
+
+{% block content %}
+	<form method="POST">
+		{% csrf_token %}
+		{% comment %} render form manually {% endcomment %}
+		{% if form.non_field_errors %}
+			<ul>
+				{% for error in form.non_field_errors %}
+					<li>{{error}}<li>
+				{% endfor %}
+			</ul>
+		{% endif %}
+
+		{% for hidden_field in form.hidden_fields %}
+			{% if hidden_field.errors %}
+				<ul>
+				{% for error in hidden_field.errors %}
+					<li>(Hidden Field: {{hidden_field.name}}) {{error}}</li>
+				{% endfor %}
+				</ul>
+			{% endif %}
+			{{hidden_field}}
+		{% endfor %}
+		{% for field in form.visible_fields %}
+		<div class="form-outline mb-4">
+			<label class="form-label" for="{{field.auto_id}}">{{field.label}}</label>
+			{% comment %} {{field.label_tag}} {% endcomment %}
+			{% if field.errors %}
+				<ul>
+					{% for error in field.errors %}
+						<li>{{error}}</li>
+					{% endfor %}
+				</ul>
+			{% endif %}
+			{{field}}
+			{% if field.help_text %}
+				<br/>{{field.help_text}}
+			{% endif %}
+		</div>
+		{% endfor %}
+		{% comment %} {{form.as_p}} {% endcomment %}
+		<button type="submit" class="btn btn-primary">login</button>
+	</form>
+{% endblock %}
