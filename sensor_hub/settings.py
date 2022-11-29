@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'channel',
 
     'rest_framework',
+    'rest_framework.authtoken',
 ]
 
 MIDDLEWARE = [
@@ -123,7 +124,6 @@ STATIC_URL = 'static/'
 
 STATICFILES_DIRS = [
     BASE_DIR / "static",
-    BASE_DIR / "app",
 ]
 
 # Default primary key field type
