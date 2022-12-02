@@ -8,18 +8,18 @@ from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.authtoken.models import Token
 
-from .serializers import CustomUSerSerializer
+from .serializers import CustomUserSerializer
 
 User = get_user_model()
 
 class UserList(APIView):
     def get(self, request, format=None):
         users = User.objects.all()
-        serializer = CustomUSerSerializer(users, many=True)
+        serializer = CustomUserSerializer(users, many=True)
         return Response(serializer.data)
     
     def post(self, request, format=None):
-        serializer = CustomUSerSerializer(data=request.data)
+        serializer = CustomUserSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -28,8 +28,8 @@ class UserList(APIView):
 @api_view(['POST', ])
 def login(request):
     context = {}
-    email = request.POST.get('email')
-    password = request.POST.get('password')
+    email = request.data.get('email')
+    password = request.data.get('password')
     print(f'email: {email}')
     print(f'password: {password}')
     user = authenticate(email=email, password=password)
@@ -40,11 +40,21 @@ def login(request):
             token = Token.objects.create(user=user)
         context['response'] = "successfully authenticated"
         context['token'] = token.key
-    else:
-        context['response'] = "Error"
-        context['error_message'] = "invalid ceredentials"
+        context['account_details'] = CustomUserSerializer(user).data;
+        return Response(context, status=status.HTTP_200_OK)
+
+    # it failed
+    context['response'] = "Error"
+    context['error_message'] = "invalid ceredentials"
     
-    return Response(context)
+    return Response(context, status=status.HTTP_401_UNAUTHORIZED)
+
+@api_view(['GET',])
+@authentication_classes([TokenAuthentication, ])
+@permission_classes([IsAuthenticated])
+def get_account_details(request):
+    serializer = CustomUserSerializer(request.user);
+    return Response(serializer.data);
 
 @api_view(["POST", ])
 @authentication_classes([TokenAuthentication, ])

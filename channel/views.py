@@ -1,6 +1,5 @@
-from django.utils.decorators import method_decorator
-from django.contrib.auth.decorators import login_required
-
+from rest_framework.authentication import TokenAuthentication
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
@@ -10,9 +9,9 @@ from .models import Channel
 from .serializers import ChannelSerializer
 
 # Create your views here.
-
-@method_decorator(login_required, name='dispatch')
 class ChannelListAPIView(APIView):
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
     def get(self, request, format=None):
         channels = Channel.objects.filter(account=request.user)
         serializer = ChannelSerializer(channels, many=True)
