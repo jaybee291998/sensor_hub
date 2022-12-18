@@ -22,3 +22,25 @@ class Channel(models.Model):
 
     def __str__(self):
         return f"{self.name} ({self.account.email})"
+
+class Field(models.Model):
+    name              = models.CharField(max_length=64)
+    channel           = models.ForeignKey(Channel, related_name="fields", on_delete=models.CASCADE, null=True)
+
+    def __str__(self):
+        return f"{self.name} - {self.channel.name}";
+
+class ChannelEntry(models.Model):
+    channel           = models.ForeignKey(Channel, related_name="channel_entries", on_delete=models.CASCADE, null=True)
+    timestamp         = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f'{self.channel.name} - {self.timestamp}'
+
+class FieldEntry(models.Model):
+    field             = models.ForeignKey(Field, related_name="field_entries", on_delete=models.CASCADE, null=True)
+    value             = models.DecimalField(max_digits=20, decimal_places=10)
+    channel_entry     = models.ForeignKey(ChannelEntry, related_name="field_entries", on_delete=models.CASCADE, null=True)
+
+    def __str__(self):
+        return f'{self.field.name} - {self.value}'
