@@ -2,7 +2,7 @@ from sensor_hub.settings import *
 
 DEBUG = False
 
-SECRET_KEY = os.getenv('SECRET_KEY')
+SECRET_KEY = 'django-insecure-jri&oovjjn_5)uq#!6tbr=@z((!_!0s$(^ch@8+p$2k+cuh2b8'
 
 ALLOWED_HOSTS = ['127.0.0.1:5500', 'sensorhub.pythonanywhere.com']
 
