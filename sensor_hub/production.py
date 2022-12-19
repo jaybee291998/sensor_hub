@@ -1,6 +1,6 @@
 from sensor_hub.settings import *
 
-DEBUG = False
+DEBUG = True
 
 SECRET_KEY = 'django-insecure-jri&oovjjn_5)uq#!6tbr=@z((!_!0s$(^ch@8+p$2k+cuh2b8'
 
