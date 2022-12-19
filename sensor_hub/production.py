@@ -18,7 +18,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'sensorhub$default',
         'USER': 'sensorhub',
-        'PASSWORD': os.getenv('DB_PASSWORD'),
+        'PASSWORD': "Wubbalubbadubdub291998",
         'HOST': 'sensorhub.mysql.pythonanywhere-services.com',
     }
 }
