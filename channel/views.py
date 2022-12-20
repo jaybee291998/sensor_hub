@@ -126,12 +126,14 @@ class ChannelEntryAPIView(APIView):
             value = request.data.get(name)
             if value is None:
                 field_validation[name] = f'{name} must be present'
+                print(f'{name} must be present')
             else:
                 # convert values to float
                 try:
                     validated_data[name] = float(value)
                 except ValueError as e:
                     field_validation[name] = f'{name} must be a number'
+                    print(f'{name} must be a number')
         # check if field valdiation is empty
         if field_validation:
             return Response(field_validation, status=status.HTTP_400_BAD_REQUEST)
