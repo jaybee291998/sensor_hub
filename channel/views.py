@@ -91,13 +91,14 @@ class ChannelEntryListAPIView(APIView):
         if channel is not None:
             context = {}
             channel_entries = channel.channel_entries.all()
+            print(channel_entries.explain())
             channel_entries_serializer = ChannelEntrySerializer(channel_entries, many=True)
-            # for channel_entry, serialized in zip(channel_entries, channel_entries_serializer.data):
-            #     field_entries = channel_entry.field_entries.all()
-            #     field_entries_serialized = FieldEntrySerializer(field_entries, many=True, fields=('value', 'field')).data
-                # context[serialized['timestamp']] = field_entries_serialized
-            # return Response(context, status=status.HTTP_200_OK)
-            return Response(channel_entries_serializer.data, status=status.HTTP_200_OK)
+            for channel_entry, serialized in zip(channel_entries, channel_entries_serializer.data):
+                field_entries = channel_entry.field_entries.all()
+                field_entries_serialized = FieldEntrySerializer(field_entries, many=True, fields=('value', 'field')).data
+                context[serialized['timestamp']] = field_entries_serialized
+            return Response(context, status=status.HTTP_200_OK)
+            # return Response(channel_entries_serializer.data, status=status.HTTP_200_OK)
         return Response({"error":"youve done goof"}, status=status.HTTP_400_BAD_REQUEST)
 
 class ChannelEntryAPIView(APIView):
