@@ -41,7 +41,7 @@ class FieldListAPIView(APIView):
     def get(self, request, channel_id, format=None):
         channel = self.get_object(channel_id, request.user)
         if channel is not None:
-            serializer = FieldSerializer(channel.fields.all(), many=True)
+            serializer = FieldSerializer(channel.fields.all().order_by('pk'), many=True)
             return Response(serializer.data, status=status.HTTP_200_OK)
 
         # channel doesnt exists or have no access
@@ -91,13 +91,13 @@ class ChannelEntryListAPIView(APIView):
         if channel is not None:
             context = {}
             channel_entries = channel.channel_entries.all()
-            print(channel_entries.explain())
+            # print(channel_entries.explain())
             channel_entries_serializer = ChannelEntrySerializer(channel_entries, many=True)
-            for channel_entry, serialized in zip(channel_entries, channel_entries_serializer.data):
-                field_entries = channel_entry.field_entries.all()
-                field_entries_serialized = FieldEntrySerializer(field_entries, many=True, fields=('value', 'field')).data
-                context[serialized['timestamp']] = field_entries_serialized
-            return Response(context, status=status.HTTP_200_OK)
+            # for channel_entry, serialized in zip(channel_entries, channel_entries_serializer.data):
+            #     field_entries = channel_entry.field_entries.all()
+            #     field_entries_serialized = FieldEntrySerializer(field_entries, many=True, fields=('value', 'field')).data
+                # context[serialized['timestamp']] = field_entries_serialized
+            return Response(channel_entries_serializer.data, status=status.HTTP_200_OK)
             # return Response(channel_entries_serializer.data, status=status.HTTP_200_OK)
         return Response({"error":"youve done goof"}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -119,7 +119,9 @@ class ChannelEntryAPIView(APIView):
         if channel is None:
             return Response({"error": "invalid api key"}, status=status.HTTP_401_UNAUTHORIZED)
         # data validation, will refactor later
-        channel_fields = channel.fields.all()
+        # the channel fields will be ordered by there creation time meaning the first field
+        # created represents field1 on channel entry, meaning the second is field2
+        channel_fields = channel.fields.all().order_by('pk')
         field_names = [field.name for field in channel_fields]
         # make sure that every field is present on the request
         field_validation = {}
@@ -139,16 +141,21 @@ class ChannelEntryAPIView(APIView):
         # check if field valdiation is empty
         if field_validation:
             return Response(field_validation, status=status.HTTP_400_BAD_REQUEST)
-        print(validated_data)
+        # print(validated_data)
+        # d = [validated_data[field_name] for field_name in field_names]
+        # basically order the validated data based the order of the field names
+        d = [None]*8
+        for i in range(len(field_names)):
+            d[i] = validated_data[field_names[i]]
 
+        # print(d)
         # we now have a clean data 
         # we're gonna create a new ChannelEntry
-        channel_entry = ChannelEntry(channel=channel)
+        # d[0] for field1
+        channel_entry = ChannelEntry(channel=channel, field1=d[0], field2=d[1], field3=d[2], field4=d[3], field5=d[4], field6=d[5], field7=d[6], field8=d[7])
+
         # save
         channel_entry.save()
-        for field in channel_fields:
-            new_field_entry = FieldEntry(field=field, value=validated_data[field.name], channel_entry=channel_entry)
-            new_field_entry.save()
         return Response(request.data, status=status.HTTP_200_OK)
 
 def validate_sensor_data(sensor_data, channel):

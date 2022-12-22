@@ -27,10 +27,27 @@ class Field(models.Model):
     name              = models.CharField(max_length=64)
     channel           = models.ForeignKey(Channel, related_name="fields", on_delete=models.CASCADE, null=True)
 
+    def save(self, *args, **kwargs):
+        # current number of fields of the channel
+        current_number_of_fields = self.channel.fields.all().count()
+        # print(f'current count: {current_number_of_fields}')
+        if current_number_of_fields <= 7:
+            # make sure that a channel only has 8 fields
+            super().save(*args, **kwargs)
+
+
     def __str__(self):
         return f"{self.name} - {self.channel.name}";
 
 class ChannelEntry(models.Model):
+    field1            = models.DecimalField(max_digits=20, decimal_places=10, null=True, blank=True)
+    field2            = models.DecimalField(max_digits=20, decimal_places=10, null=True, blank=True)
+    field3            = models.DecimalField(max_digits=20, decimal_places=10, null=True, blank=True)
+    field4            = models.DecimalField(max_digits=20, decimal_places=10, null=True, blank=True)
+    field5            = models.DecimalField(max_digits=20, decimal_places=10, null=True, blank=True)
+    field6            = models.DecimalField(max_digits=20, decimal_places=10, null=True, blank=True)
+    field7            = models.DecimalField(max_digits=20, decimal_places=10, null=True, blank=True)
+    field8            = models.DecimalField(max_digits=20, decimal_places=10, null=True, blank=True)
     channel           = models.ForeignKey(Channel, related_name="channel_entries", on_delete=models.CASCADE, null=True)
     timestamp         = models.DateTimeField(auto_now_add=True)
 
