@@ -91,8 +91,12 @@ class ChannelEntryListAPIView(APIView):
         if channel is not None:
             context = {}
             channel_entries = channel.channel_entries.all()
+            field_count = channel.fields.all().count()
+            included_fields = ['timestamp']
+            for i in range(1, field_count+1):
+                included_fields.append(f'field{i}')
             # print(channel_entries.explain())
-            channel_entries_serializer = ChannelEntrySerializer(channel_entries, many=True)
+            channel_entries_serializer = ChannelEntrySerializer(channel_entries, many=True, fields=tuple(included_fields))
             # for channel_entry, serialized in zip(channel_entries, channel_entries_serializer.data):
             #     field_entries = channel_entry.field_entries.all()
             #     field_entries_serialized = FieldEntrySerializer(field_entries, many=True, fields=('value', 'field')).data

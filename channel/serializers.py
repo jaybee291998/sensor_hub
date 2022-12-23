@@ -33,7 +33,7 @@ class FieldSerializer(serializers.ModelSerializer):
         fields = '__all__'
         read_only_fields = ['channel']
 
-class ChannelEntrySerializer(serializers.ModelSerializer):
+class ChannelEntrySerializer(DynamicFieldsModelSerializer):
     class Meta:
         model = ChannelEntry
         fields = '__all__'
