@@ -1,3 +1,4 @@
+from datetime import date, datetime, timedelta
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
@@ -90,19 +91,24 @@ class ChannelEntryListAPIView(APIView):
         channel = self.get_object(channel_id, request.user)
         if channel is not None:
             context = {}
-            channel_entries = channel.channel_entries.all()
+            number_of_hours = request.query_params.get('number_of_hours')
+            if number_of_hours is not None: 
+                try:
+                    number_of_hours = int(number_of_hours)
+                except ValueError:
+                    number_of_hours = 1
+            else:
+                number_of_hours = 1
+            interval = timedelta(hours=number_of_hours)
+            end_date = date.today() + timedelta(hours=1)
+            start_date = end_date - interval
+            channel_entries = channel.channel_entries.filter(timedelta__range=[start_date, end_date])
             field_count = channel.fields.all().count()
             included_fields = ['timestamp']
             for i in range(1, field_count+1):
                 included_fields.append(f'field{i}')
-            # print(channel_entries.explain())
             channel_entries_serializer = ChannelEntrySerializer(channel_entries, many=True, fields=tuple(included_fields))
-            # for channel_entry, serialized in zip(channel_entries, channel_entries_serializer.data):
-            #     field_entries = channel_entry.field_entries.all()
-            #     field_entries_serialized = FieldEntrySerializer(field_entries, many=True, fields=('value', 'field')).data
-                # context[serialized['timestamp']] = field_entries_serialized
             return Response(channel_entries_serializer.data, status=status.HTTP_200_OK)
-            # return Response(channel_entries_serializer.data, status=status.HTTP_200_OK)
         return Response({"error":"youve done goof"}, status=status.HTTP_400_BAD_REQUEST)
 
 class ChannelEntryAPIView(APIView):
