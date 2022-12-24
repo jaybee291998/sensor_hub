@@ -96,9 +96,9 @@ class ChannelEntryListAPIView(APIView):
                 try:
                     number_of_hours = int(number_of_hours)
                 except ValueError:
-                    number_of_hours = 1
+                    return Response({"error":"must be a number"}, status=status.HTTP_400_BAD_REQUEST)
             else:
-                number_of_hours = 1
+                return Response({"error":"there should be a hours"}, status=status.HTTP_400_BAD_REQUEST)
             interval = timedelta(hours=number_of_hours)
             end_date = datetime.today()
             start_date = end_date - interval
