@@ -100,7 +100,8 @@ class ChannelEntryListAPIView(APIView):
             else:
                 number_of_hours = 1
             interval = timedelta(hours=number_of_hours)
-            end_date = date.today() + timedelta(hours=1)
+            end_date = datetime.today() + timedelta(hours=1)
+            # print(interval)
             start_date = end_date - interval
             channel_entries = channel.channel_entries.filter(timestamp__range=[start_date, end_date])
             field_count = channel.fields.all().count()
