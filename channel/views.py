@@ -90,27 +90,46 @@ class ChannelEntryListAPIView(APIView):
     def get(self, request, channel_id, format=None):
         channel = self.get_object(channel_id, request.user)
         if channel is not None:
-            context = {}
+            channel_entries = None;
             number_of_hours = request.query_params.get('number_of_hours')
+            last_entry_param = request.query_params.get('last_entry')
+
             if number_of_hours is not None: 
                 try:
                     number_of_hours = int(number_of_hours)
                 except ValueError:
                     return Response({"error":"must be a number"}, status=status.HTTP_400_BAD_REQUEST)
+                interval = timedelta(hours=number_of_hours)
+                end_date = datetime.today()
+                start_date = end_date - interval
+                channel_entries = channel.channel_entries.filter(timestamp__range=[start_date, end_date])
+                data = get_channel_entries_data(channel, channel_entries)
+                return Response(data, status=status.HTTP_200_OK)
+
+            elif last_entry_param is not None:
+                last_timestamp = None;
+                try:
+                    last_timestamp = datetime.strptime(last_entry_param, "%B %d, %Y %I:%M:%S %p")
+                except ValueError as e:
+                    return Response({"error":"should be a valid timestamp"}, status=status.HTTP_400_BAD_REQUEST)
+
+                start_date = last_timestamp + timedelta(seconds=1)
+                channel_entries = channel.channel_entries.filter(timestamp__gte=start_date)
+                data = get_channel_entries_data(channel, channel_entries)
+                return Response(data, status=status.HTTP_200_OK)
+
             else:
-                return Response({"error":"there should be a hours"}, status=status.HTTP_400_BAD_REQUEST)
-            interval = timedelta(hours=number_of_hours)
-            end_date = datetime.today()
-            start_date = end_date - interval
-            print(start_date)
-            channel_entries = channel.channel_entries.filter(timestamp__range=[start_date, end_date])
-            field_count = channel.fields.all().count()
-            included_fields = ['timestamp']
-            for i in range(1, field_count+1):
-                included_fields.append(f'field{i}')
-            channel_entries_serializer = ChannelEntrySerializer(channel_entries, many=True, fields=tuple(included_fields))
-            return Response(channel_entries_serializer.data, status=status.HTTP_200_OK)
+                return Response({"error":"there cant more than 1 params"}, status=status.HTTP_400_BAD_REQUEST)
         return Response({"error":"youve done goof"}, status=status.HTTP_400_BAD_REQUEST)
+
+def get_channel_entries_data(channel, channel_entries):
+    field_count = channel.fields.all().count()
+    included_fields = ['timestamp']
+    for i in range(1, field_count+1):
+        included_fields.append(f'field{i}')
+        channel_entries_serializer = ChannelEntrySerializer(channel_entries, many=True, fields=tuple(included_fields))
+    return channel_entries_serializer.data;
+
 
 class ChannelEntryAPIView(APIView):
     # get channel
