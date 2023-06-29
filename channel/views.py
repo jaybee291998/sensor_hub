@@ -1,3 +1,4 @@
+import requests
 from datetime import date, datetime, timedelta
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
@@ -187,6 +188,37 @@ class ChannelEntryAPIView(APIView):
         # save
         channel_entry.save()
         return Response(request.data, status=status.HTTP_200_OK)
+
+class WakeMeUpAPIView(APIView):
+    # get channel
+    def get_channel(self, api_key):
+        # retrieve channel if it exists
+        try:
+            channel = Channel.objects.get(api_key=api_key)
+        except Channel.DoesNotExist:
+            channel = None
+        return channel
+
+    def post(self, request, format=None):
+        api_key = request.data.get('api_key')
+        if api_key is None:
+            return Response({"error": "api key is not provided"}, status=status.HTTP_400_BAD_REQUEST)
+        channel = self.get_channel(api_key)
+        if channel is None:
+            return Response({"error": "invalid api key"}, status=status.HTTP_401_UNAUTHORIZED)
+        urls = request.data.get('urls')
+        if urls is None:
+            return Response({"error": "provide urls"}, status=status.HTTP_400_BAD_REQUEST)
+        failures = []
+        for url in urls:
+            try:
+                requests.get(url)
+            except Exception as e:
+                print(e)
+                failures.append(e)
+        if len(failures) != 0:
+            return Response({"error": failures}, status.HTTP_400_BAD_REQUEST)
+        return Response({"success": "all urls successfully queried"})
 
 def validate_sensor_data(sensor_data, channel):
     channel_fields = channel.fields.all()
