@@ -215,7 +215,7 @@ class WakeMeUpAPIView(APIView):
                 requests.get(url)
             except Exception as e:
                 print(e)
-                failures.append(e)
+                failures.append(str(e))
         if len(failures) != 0:
             return Response({"error": failures}, status.HTTP_400_BAD_REQUEST)
         return Response({"success": "all urls successfully queried"})
