@@ -190,7 +190,7 @@ class ChannelEntryAPIView(APIView):
         return Response(request.data, status=status.HTTP_200_OK)
 
     def get(self, request, format=None):
-        api_key = request.data.get('api_key')
+        api_key = request.query_params.get('api_key')
         if api_key is None:
             return Response({"error": "api key is not provided"}, status=status.HTTP_400_BAD_REQUEST)
         channel = self.get_channel(api_key)
