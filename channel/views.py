@@ -189,6 +189,36 @@ class ChannelEntryAPIView(APIView):
         channel_entry.save()
         return Response(request.data, status=status.HTTP_200_OK)
 
+    def get(self, request, format=None):
+        api_key = request.data.get('api_key')
+        if api_key is None:
+            return Response({"error": "api key is not provided"}, status=status.HTTP_400_BAD_REQUEST)
+        channel = self.get_channel(api_key)
+        if channel is None:
+            return Response({"error": "invalid api key"}, status=status.HTTP_401_UNAUTHORIZED)
+
+        specific_date_str = request.query_params.get('specific_date')
+        request_all_records = request.query_params.get('request_all_records')
+
+        if request_all_records is not None and request_all_records == 'true':
+            channel_entries = channel.channel_entries.all()
+            data = get_channel_entries_data(channel, channel_entries)
+            return Response(data, status=status.HTTP_200_OK)
+
+        if specific_date_str is None:
+            specific_date = date.today()
+        else:
+            try:
+                specific_date = datetime.strptime(specific_date_str, "%Y-%m-%d")
+            except:
+                return Response({'invalid_date_str': 'please provide a valid date str YYYY-mm-dd'})
+
+        start_date = specific_date;
+        end_date = start_date + timedelta(days=1);
+        channel_entries = channel.channel_entries.filter(timestamp__range=[start_date, end_date])
+        data = get_channel_entries_data(channel, channel_entries)
+        return Response(data, status=status.HTTP_200_OK)
+
 class WakeMeUpAPIView(APIView):
     # get channel
     def get_channel(self, api_key):
